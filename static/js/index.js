@@ -68,3 +68,54 @@ $(document).ready(function() {
     bulmaSlider.attach();
 
 })
+
+// Auto-number citations that link to reference IDs (href="#ref-...")
+function autoNumberCitations() {
+  var anchors = Array.from(document.querySelectorAll('a[href^="#ref-"]'));
+  var refMap = new Map();
+  var counter = 1;
+
+  anchors.forEach(function(a) {
+    // skip anchors that are inside the sources list (we'll update those separately)
+    if (a.closest('#sources')) return;
+    var href = a.getAttribute('href');
+    if (!href) return;
+    var refId = href.slice(1);
+    if (!refMap.has(refId)) {
+      refMap.set(refId, counter);
+      counter += 1;
+    }
+    var num = refMap.get(refId);
+
+    // Replace the anchor content with a numbered citation in superscript
+    var sup = document.createElement('sup');
+    var link = document.createElement('a');
+    link.setAttribute('href', '#' + refId);
+    link.className = 'auto-cite';
+    link.textContent = '[' + num + ']';
+    sup.appendChild(link);
+
+    // Replace the original anchor with the superscripted numbered link
+    a.parentNode.replaceChild(sup, a);
+  });
+
+  // Update the sources list entries to show their assigned numbers
+  refMap.forEach(function(num, refId) {
+    var li = document.getElementById(refId);
+    if (!li) return;
+    // avoid duplicating numbers if script runs twice
+    if (li.querySelector('.ref-number')) return;
+    var span = document.createElement('span');
+    span.className = 'ref-number';
+    span.style.fontWeight = 'bold';
+    span.textContent = '[' + num + '] ';
+    li.insertBefore(span, li.firstChild);
+  });
+}
+
+// Run after DOM ready if available, else on window load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', autoNumberCitations);
+} else {
+  autoNumberCitations();
+}
