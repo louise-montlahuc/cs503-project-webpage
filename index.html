@@ -345,19 +345,43 @@
           <h3 class="title is-4">Foveated tokenization</h3>
           <div class="content has-text-justified">
             <p>
-              Our second major modification introduces foveated tokenization, which dynamically scales the spatial resolution of the 3D scene based on proximity to a designated "fixation point". To mimic the sharp drop in human visual acuity outside the fovea, we define a fixation point in the voxel grid, centered vertically and laterally, but positioned 25% along the forward x-axis. We then partition the 3D space into three concentric zones: a full-resolution Foveal Zone, a moderately compressed Mid Zone (using 3×3×3 pooling blocks), and a highly compressed Peripheral Zone (using 5×5×5 pooling blocks). We apply this spatial pooling symmetrically across two key parts of the network. First, in the cross-attention head (VoxFormer_head), we pool the query tokens, reducing the query count by up to 80%. Second, in the occupancy encoder neck, we apply the exact same foveal pooling scheme to the dense 3D voxel feature volume before passing it to our custom 3D ResNet for local aggregation. By coarsening both the sampling queries and the underlying spatial features in distant regions, we force the network to focus its attention budget on the fine-grained, safety-critical foveal area. This synergistic approach reduces full transformer cross-attention operations by approximately 90% while maintaining semantic coherence. To rigorously evaluate this design, we established three ablation tracks: query-only pooling, voxel-only pooling, and our combined approach, allowing us to isolate the individual contributions of each foveated component.
+              Inspired by FoveaTer (ICLR 2023), foveated tokenization is applied at two distinct stages of the pipeline: first at the level of 3D feature extraction in the voxel backbone, and second at the level of cross-attention queries in the BEV lifting head.
             </p>
+
+            <h4 class="title is-5">Part 1 — Foveated Local Aggregator (backbone stage)</h4>
             <p>
-              For a voxel coordinate $p$, the effective pooling stride $S(p)$ is determined by its Euclidean distance $d(p, F)$ from the fixation point $F$:
-              $$
-              S(p) = 
-              \begin{cases} 
-              1 & \text{if } d(p, F) < 0.2 \quad \text{(Foveal)} \\
-              3 & \text{if } 0.2 \le d(p, F) \le 0.4 \quad \text{(Mid)} \\
-              5 & \text{if } d(p, F) > 0.4 \quad \text{(Peripheral)}
-              \end{cases}
-              $$
+              The <em>FoveatedLocalAggregator</em> replaces the standard dense 3D backbone with a two-stream design that shares weights between both streams. Given the full voxel feature volume of shape $(B, C, V_H, V_W, V_Z)$, two parallel forward passes are computed:
             </p>
+            <ul>
+              <li><strong>Foveal stream:</strong> A spatial crop centred at the fixation point is extracted at full resolution and passed through the shared backbone and FPN neck. This preserves fine-grained spatial detail in the region of interest.</li>
+              <li><strong>Global stream:</strong> The entire volume is first average-pooled by a factor of 2 in every spatial dimension, halving the resolution, and then processed through the same backbone and FPN neck. This captures wide-field context at a fraction of the cost.</li>
+            </ul>
+            <p>
+              The outputs are merged by upsampling the global feature map back to full resolution via nearest-neighbour interpolation, then overwriting the foveal region with the high-resolution foveal features. The result is a complete $(B, C, V_H, V_W, V_Z)$ feature map in which the central foveal zone retains full-resolution features while the periphery carries coarser, pooled features. Because the backbone and neck weights are shared across both streams, no additional parameters are introduced. This design reduces backbone FLOPs from approximately 685 GFLOPs (dense) to approximately 151 GFLOPs, a 4.5&times; reduction.
+            </p>
+            <div class="content has-text-centered">
+              <img src="./static/images/Foveation1.png" style="max-width: 80%;"/>
+            </div>
+
+            <h4 class="title is-5">Part 2 — Foveated cross-attention tokenization (transformer stage)</h4>
+            <p>
+              The second application occurs inside <em>VoxFormerHeadCrossAttention</em>, which lifts image features into the voxel grid via deformable cross-attention. Without foveation, every non-masked voxel in the grid is used as a separate query token, which is expensive for large volumes. With foveated tokenization, the set of active voxel queries is instead partitioned into three concentric zones defined by their $L_\infty$ (Chebyshev) distance from the same fixation point used in Part 1:
+            </p>
+            <ul>
+              <li><strong>Foveal zone</strong> (distance &le; <em>foveal_radius</em>): every voxel is kept as an individual query token at full resolution.</li>
+              <li><strong>Mid zone</strong> (distance between <em>foveal_radius</em> and <em>mid_radius</em>): voxels are grouped into non-overlapping spatial blocks of size <em>mid_stride</em>&sup3;; each block is pooled into a single representative token.</li>
+              <li><strong>Peripheral zone</strong> (distance &gt; <em>mid_radius</em>): voxels are grouped into blocks of size <em>peripheral_stride</em>&sup3; and similarly reduced to one token per block.</li>
+            </ul>
+            <p>
+              After cross-attention, peripheral and mid-zone block features are scattered back to all member voxels within each block. This reduces the number of transformer queries proportionally to the pooling strides, lowering the attention cost significantly while concentrating computational budget on the foveal region where spatial precision matters most.
+            </p>
+            <div class="content has-text-centered">
+              <img src="./static/images/Foveation2.png" style="max-width: 80%;"/>
+            </div>
+            <p>
+              Together, the two parts form a coherent non-uniform representation: Part 1 ensures the backbone produces richer features in the foveal zone, and Part 2 ensures the cross-attention head devotes proportionally more query capacity to that same zone.
+            </p>
+
           </div>
         </div>
       </div>
