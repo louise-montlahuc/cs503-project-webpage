@@ -475,65 +475,101 @@
               Ablation study comparing baseline, foveation, voxel-only foveation, query-only foveation, and variants with distance-based loss
             </p>
           </div>
-        </div>
-      </div>
-    </div>
-    <!--/ Results. -->
-    
-    <h3 class="title is-4">IoU, mean IoU and inference time metrics</h3>
 
-      <div class="content has-text-justified">
-        <p>
-          The table below compares the baseline with the different foveation variants using validation IoU, validation mIoU, and inference time.
-        </p>
+        
+          <h3 class="title is-4">IoU, mean IoU and inference time metrics</h3>
 
-        <div class="content has-text-centered">
-          <img src="./static/images/results_table.png" style="max-width: 85%;"/>
-        </div>
-      </div>
+          <div class="content has-text-justified">
+            <p>
+              The table below compares the baseline with the different foveation variants using validation IoU, validation mIoU, and inference time.
+            </p>
 
-      <h3 class="title is-4">Efficiency metrics</h3>
+            <div class="content has-text-centered">
+              <img src="./static/images/results_table.png" style="max-width: 85%;"/>
+            </div>
+          </div>
 
-      <div class="content has-text-justified">
-        <p>
-          The table below reports normalized performance and efficiency scores. Higher efficiency means a better trade-off between prediction quality and inference time.
-        </p>
+          <h3 class="title is-4">Efficiency metrics</h3>
 
-        <div class="content has-text-centered">
-          <img src="./static/images/efficiency_table.png" style="max-width: 85%;"/>
-        </div>
+          <div class="content has-text-justified">
+            <p>
+              The table below reports normalized performance and efficiency scores. Higher efficiency means a better trade-off between prediction quality and inference time.
+            </p>
 
-        <p>
-          The efficiency scores are computed as the normalized prediction quality divided by the normalized inference time:
-        </p>
+            <div class="content has-text-centered">
+              <img src="./static/images/efficiency_table.png" style="max-width: 85%;"/>
+            </div>
 
-        <p class="has-text-centered">
-          \[
-          \mathrm{Efficiency}_{IoU}
-          =
-          \frac{\mathrm{IoU}/\mathrm{IoU}_{baseline}}
-              {t/t_{baseline}},
-          \qquad
-          \mathrm{Efficiency}_{mIoU}
-          =
-          \frac{\mathrm{mIoU}/\mathrm{mIoU}_{baseline}}
-              {t/t_{baseline}}
-          \]
-        </p>
-      </div>
+            <p>
+              The efficiency scores are computed as the normalized prediction quality divided by the normalized inference time:
+            </p>
 
-      <h3 class="title is-4">Efficiency comparison</h3>
+            <p class="has-text-centered">
+              \[
+              \mathrm{Efficiency}_{IoU}
+              =
+              \frac{\mathrm{IoU}/\mathrm{IoU}_{baseline}}
+                  {t/t_{baseline}},
+              \qquad
+              \mathrm{Efficiency}_{mIoU}
+              =
+              \frac{\mathrm{mIoU}/\mathrm{mIoU}_{baseline}}
+                  {t/t_{baseline}}
+              \]
+            </p>
+          </div>
 
-        <div class="content has-text-justified">
-          <p>
-            The efficiency plot confirms that voxel-only foveation gives the best overall trade-off between prediction quality and inference time. Query-only foveation stays close to the baseline in terms of runtime, which explains its lower efficiency.
-          </p>
+          <h3 class="title is-4">Efficiency comparison</h3>
 
-          <div class="content has-text-centered">
-            <img src="./static/images/efficiency_plot.png" style="max-width: 65%;"/>
+          <div class="content has-text-justified">
+            <p>
+              The efficiency plot confirms that voxel-only foveation gives the best overall trade-off between prediction quality and inference time. Query-only foveation stays close to the baseline in terms of runtime, which explains its lower efficiency.
+            </p>
+
+            <div class="content has-text-centered">
+              <img src="./static/images/efficiency_plot.png" style="max-width: 65%;"/>
+            </div>
+          </div>
+
+          <!-----------------------------TODO: VISUAL ITEMS THAT CAN BE USED-------------------------------->
+          <h3 class="title is-4" id="visual_items">Visualisations</h3>
+          
+          <div class="content has-text-justified">
+            <p>
+              To complement the quantitative results, we provide a qualitative comparison between the baseline and our best model: foveated voxel-reduction model. We specifically examine the spatial consistency of predictions in the near field versus the periphery to determine if our efficiency gains result in visible degradation. Notably, the two models yield highly similar visual outputs, confirming that our foveated approach preserves fine structural details and overall visual fidelity despite processing fewer voxels.
+            </p>
+          </div>
+          
+          <div class="columns is-centered is-multiline">
+            <!-- Column 1. -->
+            <div class="column is-half">
+              <div class="content">
+                <h3 class="title is-5">Baseline</h3>
+                <video id="dollyzoom" autoplay controls muted loop playsinline width="100%">
+                  <source src="./static/videos/voxdet_baseline.mp4"
+                          type="video/mp4">
+                </video>
+              </div>
+            </div>
+            <!--/ Column 1 -->
+
+            <!-- Column 2 -->
+            <div class="column is-half">
+              <div class="content">
+                <h3 class="title is-5">Foveation with voxel-reduction</h3>
+                <video id="matting-video" controls playsinline width="100%">
+                  <source src="./static/videos/matting.mp4"
+                          type="video/mp4">
+                </video>
+              </div>
+            </div>
+            <!--/ Column 2 -->
+
           </div>
         </div>
-
+        <!--/ Results. -->
+      </div>
+    </div>
   </div>
 </section>
 <!------------------------------------------------------------------------->
