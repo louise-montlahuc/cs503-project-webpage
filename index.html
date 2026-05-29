@@ -383,7 +383,7 @@
               The lateral ($y=0.5$) and vertical ($z=0.5$) axes are set to the grid center, as there is no systematic spatial bias in those dimensions for forward-facing driving scenarios.
             </p>
             <p>
-              Crucially, this fixation point is shared identically between the FoveatedLocalAggregator backbone neck and the VoxFormerHeadCrossAttention token pooling: the neck produces high-resolution features for the foveal crop, and the head preserves full-resolution query tokens for the same spatial region, ensuring the two components remain geometrically consistent. The two parts of the foveation mechanism are described below.
+              We describe the two parts of the foveation mechanism below.
             </p>
 
             <h4 class="title is-5">Part 1 — Foveation with voxel-reduction</h4>
