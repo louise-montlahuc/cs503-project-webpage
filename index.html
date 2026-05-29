@@ -418,225 +418,172 @@
 <!------------------------------------------------------------------------->
 
 <!-----------------------------TODO: RESULTS-------------------------------->
-  <section class="section">
-    <div class="container is-max-desktop">
-      <!-- Results. -->
-      <div class="columns is-centered">
-        <div class="column is-full-width">
-          <h2 class="title is-3" id="results">IV. Results</h2>
-          <div class="content has-text-justified">
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Results. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3" id="results">IV. Results</h2>
+
+        <div class="content has-text-justified">
+          <p>
+            We first evaluated the effect of the distance-based loss. Compared to the baseline loss, the distance-weighted variants slightly improve the validation IoU. The gains are modest, but they show that giving more importance to closer voxels can have a positive effect on occupancy prediction. Among the tested variants, the linear distance-based loss gives the best mIoU while remaining simple and stable, so we selected it for the rest of the experiments.
+          </p>
+
+          <div class="content has-text-centered">
+            <img src="./static/images/distance_loss_results.png" style="max-width: 90%;"/>
             <p>
-              The results part of the report can be provided here
+              Comparison of the baseline loss with linear, exponential, and inverse distance-based losses.
+            </p>
+          </div>
+
+          <p>
+            We then performed an ablation study to measure the impact of each foveation component. The voxel-only setting corresponds to applying foveation in the voxel feature extraction stage, while the query-only setting applies token reduction only during the cross-attention stage. The full foveation setting combines both mechanisms.
+          </p>
+
+          <p>
+            The results show that query reduction alone has almost no effect on inference time. In contrast, voxel-only foveation provides the best efficiency gain, reducing inference time by about 30% while keeping the drop in IoU below 3%. When query reduction is combined with voxel reduction, the performance becomes worse than with voxel-only foveation, so the best trade-off is obtained with the voxel-only configuration.
+          </p>
+
+          <div class="content has-text-centered">
+            <img src="./static/images/foveation_results.png" style="max-width: 90%;"/>
+            <p>
+              Ablation study comparing baseline, foveation, voxel-only foveation, query-only foveation, and variants with distance-based loss.
             </p>
           </div>
         </div>
       </div>
-      <!--/ Results. -->
     </div>
-  </section>
+    <!--/ Results. -->
+    <h3 class="title is-4">IoU, mean IoU and inference time metrics</h3>
+
+      <div class="content has-text-justified">
+        <p>
+          The table below compares the baseline with the different foveation variants using validation IoU, validation mIoU, and inference time.
+        </p>
+
+        <div class="content has-text-centered">
+          <img src="./static/images/results_table.png" style="max-width: 85%;"/>
+        </div>
+      </div>
+
+      <h3 class="title is-4">Efficiency metrics</h3>
+
+      <div class="content has-text-justified">
+        <p>
+          The table below reports normalized performance and efficiency scores. Higher efficiency means a better trade-off between prediction quality and inference time.
+        </p>
+
+        <div class="content has-text-centered">
+          <img src="./static/images/efficiency_table.png" style="max-width: 85%;"/>
+        </div>
+
+        <p>
+          The efficiency scores are computed as the normalized prediction quality divided by the normalized inference time:
+        </p>
+
+        <p class="has-text-centered">
+          \[
+          \mathrm{Efficiency}_{IoU}
+          =
+          \frac{\mathrm{IoU}/\mathrm{IoU}_{baseline}}
+              {t/t_{baseline}},
+          \qquad
+          \mathrm{Efficiency}_{mIoU}
+          =
+          \frac{\mathrm{mIoU}/\mathrm{mIoU}_{baseline}}
+              {t/t_{baseline}}
+          \]
+        </p>
+      </div>
+      <h3 class="title is-4">Efficiency comparison</h3>
+
+        <div class="content has-text-justified">
+          <p>
+            The efficiency plot confirms that voxel-only foveation gives the best overall trade-off between prediction quality and inference time. Query-only foveation stays close to the baseline in terms of runtime, which explains its lower efficiency.
+          </p>
+
+          <div class="content has-text-centered">
+            <img src="./static/images/efficiency_plot.png" style="max-width: 65%;"/>
+          </div>
+        </div>
+  </div>
+</section>
 <!------------------------------------------------------------------------->
 
 <!-----------------------------TODO: DISCUSSION-------------------------------->
-  <section class="section">
-    <div class="container is-max-desktop">
-      <!-- Conclusion and Limitations. -->
-      <div class="columns is-centered">
-        <div class="column is-full-width">
-          <h2 class="title is-3" id="conclusion">V. Conclusion and Limitations</h2>
-          <div class="content has-text-justified">
-            <p>
-              The conclusion and limitations part of the report can be provided here
-            </p>
-          </div>
+<section class="section">
+  <div class="container is-max-desktop">
+    <!-- Conclusion and Limitations. -->
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3" id="conclusion">V. Conclusion and Limitations</h2>
+        <div class="content has-text-justified">
+          <p>
+            Our experiments show that foveated processing can improve the efficiency of 3D occupancy prediction. The best result is obtained with voxel-only foveation, which reduces inference time by about 30% while keeping the decrease in IoU below 3%. This confirms that reducing voxel resolution in less critical regions can save computation while preserving most of the prediction quality.
+          </p>
+
+          <p>
+            However, the results also show some limitations. Query-only foveation does not significantly reduce inference time, and combining query reduction with voxel reduction leads to worse performance than voxel-only foveation. In addition, adding the distance-based loss to foveation does not improve the final results in our current experiments.
+          </p>
+
+          <p>
+            Future work should explore better hyperparameter tuning, including max pooling versus average pooling, different pooling sizes, and different foveal or peripheral region shapes. Another important direction would be to reduce the keys and values in the attention mechanism, not only the queries. Finally, the focus point is currently fixed, but making it dynamic could allow the model to adapt its high-resolution region to the actual content of the scene.
+          </p>
         </div>
       </div>
-      <!--/ Conclusion and Limitations. -->
     </div>
-  </section>
+    <!--/ Conclusion and Limitations. -->
+  </div>
+</section>
 <!------------------------------------------------------------------------->
 
 <!-----------------------------TODO: VISUAL ITEMS THAT CAN BE USED-------------------------------->
-  <section class="section">
-    <div class="container is-max-desktop">
+<section class="section">
+  <div class="container is-max-desktop">
       <!-- Visual Items. -->
       <div class="columns is-centered">
         <div class="column is-full-width">
-          <h2 class="title is-3" id="visual_items">V. Visual Items</h2>
+          <h2 class="title is-3" id="visual_items">V. Visual Items TODO METTRE LES VIDEO STYLE DES VOXEL !!!!!!</h2>
           <div class="content has-text-justified">
             <p>
-            Here you can see possible visualizations that can be used in this website 
+              Here you can see possible visualizations that can be used in this website 
             </p>
           </div>
-        <h3 class="title is-4">Video Clip</h3>
-       <!-- Video can be added like this -->   
-        <div class="content has-text-centered">
-          <video id="replay-video"
-                 controls
-                 muted
-                 preload
-                 playsinline
-                 width="75%">
-            <source src="./static/videos/replay.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-       <!---------------------------------> 
-           
-      <h3 class="title is-4">Image Interpolation with Slider</h3>
-       <!-- Image can be added like this -->
-        <div class="columns is-vcentered interpolation-panel">
-          <div class="column is-3 has-text-centered">
-            <img src="./static/images/interpolate_start.jpg"
-                 class="interpolation-image"
-                 alt="Interpolate start reference image."/>
-            <p>Start Frame</p>
-          </div>
-          <div class="column interpolation-video-column">
-            <div id="interpolation-image-wrapper">
-              Loading...
-            </div>
-            <input class="slider is-fullwidth is-large is-info"
-                   id="interpolation-slider"
-                   step="1" min="0" max="100" value="0" type="range">
-          </div>
-          <div class="column is-3 has-text-centered">
-            <img src="./static/images/interpolate_end.jpg"
-                 class="interpolation-image"
-                 alt="Interpolation end reference image."/>
-            <p class="is-bold">End Frame</p>
-          </div>
-        </div>
-        
-<h3 class="title is-4">Double Column Media Display</h3>
-    <div class="columns is-centered is-multiline">
-      <!-- Column 1. -->
-      <div class="column is-half">
-        <div class="content">
-          <h3 class="title is-5">Column 1</h3>
-          <p>
-            Add a short description for the first video/image.
-          </p>
-          <video id="dollyzoom" autoplay controls muted loop playsinline width="100%">
-            <source src="./static/videos/dollyzoom-stacked.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-      </div>
-      <!--/ Column 1 -->
-
-      <!-- Column 2 -->
-      <div class="column is-half">
-        <div class="content">
-          <h3 class="title is-5">Column 2</h3>
-          <p>
-            Add a short description for the second video/image.
-          </p>
-          <video id="matting-video" controls playsinline width="100%">
-            <source src="./static/videos/matting.mp4"
-                    type="video/mp4">
-          </video>
-        </div>
-      </div>
-      <!--/ Column 2 -->
-    </div>
-  <!--------------------------------->
-<h3 class="title is-4">Card Media Display</h3>
-      <div class="columns is-centered">
-        <div class="column is-three-quarters">
-          <div align="center" class="box">
-            <img src="static/images/related_2.gif"
-              alt="3D Bezier curves are used for representing 3D sketches of objects.">
-            <h5 class="subtitle has-text-centered">
-              <font size="-0.7">
-                <span style="font-weight:normal">
-                  Write about the media displayed in the card here. You can also add a link to the media if needed.
-                </span>
-              </font>
-            </h5>
-          </div>
-        </div>
-      </div>
-<!--------------------------------->
-<h3 class="title is-4">LaTeX Equation</h3>
-  
-Format the equations using LaTeX and add them to the website like this:
-    <p>
-        \[
-        D_{\mathrm{KL}}(P \parallel Q) =
-        \sum_{x} P(x)\,\log\!\left(\frac{P(x)}{Q(x)}\right)
-        \]
-    </p>
-<!--------------------------------->
-
-<h3 class="title is-4">Sliding Media Display</h3>
-    <section class="section">
-      <div class="container is-max-desktop">
-        <div id="dataset-carousel" class="carousel results-carousel">
-          <a href="./static/gifs/bike.gif" data-lightbox="image">
-            <img src="./static/gifs/bike.gif" alt="Bike Object">
-          </a>
-
-          <a href="./static/gifs/duck.gif" data-lightbox="image">
-            <img src="./static/gifs/duck.gif" alt="Duck Object">
-          </a>
-
-          <a href="./static/gifs/horse.gif" data-lightbox="image">
-            <img src="./static/gifs/horse.gif" alt="Horse Object">
-          </a>
-
-          <a href="./static/gifs/rose.gif" data-lightbox="image">
-            <img src="./static/gifs/rose.gif" alt="Rose Object">
-          </a>
-        </div>
-      </div>
-    </section>
-<!--------------------------------->
-<h3 class="title is-4">Table</h3>
-
-<div class="content has-text-justified">
-  <p>
-    The table format below can be used for results and other purposes.
-  </p>
-  <div class="table-container">
-    <table class="table is-bordered is-striped is-narrow is-hoverable is-fullwidth">
-      <thead>
-        <tr>
-          <th>Method</th>
-          <th>Metric 1</th>
-          <th>Metric 2</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Baseline</td>
-          <td>0.00</td>
-          <td>0.00</td>
-          <td>Reference setup</td>
-        </tr>
-        <tr>
-          <td>Method A</td>
-          <td>0.00</td>
-          <td>0.00</td>
-          <td>First variant</td>
-        </tr>
-        <tr>
-          <td>Method B</td>
-          <td>0.00</td>
-          <td>0.00</td>
-          <td>Second variant</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-</div>
-
-<!--------------------------------->
-<h3 class="title is-4">Interactive Plot</h3>
-<div class="box">
-  <iframe src="./static/plotly/interactive_plot.html" frameborder="0" width="100%"
-    height="500px"></iframe>
-</div>
+          <h3 class="title is-4">Double Column Media Display</h3>
+              <div class="columns is-centered is-multiline">
+                <!-- Column 1. -->
+                <div class="column is-half">
+                  <div class="content">
+                    <h3 class="title is-5">Column 1</h3>
+                    <p>
+                      Add a short description for the first video/image.
+                    </p>
+                    <video id="dollyzoom" autoplay controls muted loop playsinline width="100%">
+                      <source src="./static/videos/dollyzoom-stacked.mp4"
+                              type="video/mp4">
+                    </video>
+                  </div>  
+                </div>
+                <!--/ Column 1 -->
+          
+                <!-- Column 2 -->
+                <div class="column is-half">
+                  <div class="content">
+                    <h3 class="title is-5">Column 2</h3>
+                    <p>
+                      Add a short description for the second video/image.
+                    </p>
+                    <video id="matting-video" controls playsinline width="100%">
+                      <source src="./static/videos/matting.mp4"
+                              type="video/mp4">
+                    </video>
+                  </div>
+                </div>
+                <!--/ Column 2 -->
+              </div>
+            <!--------------------------------->
+      
 
 <!--------------------------------->
 
@@ -680,9 +627,12 @@ Format the equations using LaTeX and add them to the website like this:
               <div class="columns is-centered">
                 <div class="column is-8">
                   <div class="content">
-                    <h6 class="title is-6">Individual Contributions</h6>
+                    <h6 class="title is-6">Individual Contributions TODOOOOOOOOOOOOO !!!!!!!</h6>
                     <p>
-                      Add the contributions of each team member here.
+                      <strong>Loïc Misenta</strong> : Methodology, experiments, results analysis, and website development. <br>
+                      <strong>Alexandra Lagutova</strong> : Methodology, experiments, results analysis, and website development. <br>
+                      <strong>Bryan Gotti</strong> : Methodology, experiments, results analysis, and website development. <br>
+                      <strong>Louise Montlahuc</strong> : Methodology, experiments, results analysis, and website development. <br>
                     </p>
                     <p><em>
                         This website is based on the <a href="https://github.com/nerfies/nerfies.github.io"
