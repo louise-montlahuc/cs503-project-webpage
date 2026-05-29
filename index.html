@@ -382,7 +382,7 @@
               <li><strong>Global stream:</strong> The entire volume is first average-pooled by a factor of 2 in every spatial dimension, halving the resolution, and then processed through the same backbone. This captures wide-field context at a fraction of the cost.</li>
             </ul>
             <p>
-              The outputs are merged by upsampling the global feature map back to full resolution via nearest-neighbour interpolation, then overwriting the foveal region with the high-resolution foveal features. The result is a complete $(B, C, V_H, V_W, V_Z)$ feature map in which the central foveal zone retains full-resolution features while the periphery carries coarser, pooled features. Because the 3D backbone weights are shared across both streams, no additional parameters are introduced. This design reduces backbone FLOPs from approximately 687 GFLOPs (dense) to approximately 142 GFLOPs, a 4.8&times; reduction.
+              The outputs are merged by upsampling the global feature map back to full resolution via nearest-neighbour interpolation, then overwriting the foveal region with the high-resolution foveal features. The result is a complete $(B, C, V_H, V_W, V_Z)$ feature map in which the central foveal zone retains full-resolution features while the periphery carries coarser, pooled features. Because the 3D backbone weights are shared across both streams, no additional parameters are introduced. This design reduces backbone FLOPs from approximately 687 GFLOPs (dense) to approximately 142 GFLOPs, a 4.8&times; reduction. <em>(Note: All theoretical FLOPs computations presented in this report were computed using a custom script available in our code repository.)</em>
             </p>
             <div class="content has-text-centered">
               <img src="./static/images/Foveation1.png" style="max-width: 80%;"/>
@@ -535,7 +535,7 @@
         <h3 class="title is-4">FLOPs and Inference Time Bottlenecks</h3>
         <div class="content has-text-justified">
           <p>
-            The ablation study revealed an interesting behavior: query-only foveation did not significantly decrease overall inference time. We can explain this discrepancy by analyzing the theoretical floating-point operations (FLOPs) of the respective network components. <em>(Note: All theoretical FLOPs computations presented in this report were calculated using a custom profiling script available in our code repository.)</em>
+            The ablation study revealed an interesting behavior: query-only foveation did not significantly decrease overall inference time. We can explain this discrepancy by analyzing the theoretical floating-point operations (FLOPs) of the respective network components.
           </p>
           <p>
             In the dense baseline, the entire network pipeline requires approximately 1132 GFLOPs. The cross-attention module (the stage where query reduction is applied) accounts for roughly 249 GFLOPs. Meanwhile, the 3D voxel feature extractor (the stage where voxel reduction is applied) consumes about 687 GFLOPs.
