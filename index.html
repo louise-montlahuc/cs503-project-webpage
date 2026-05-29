@@ -247,10 +247,28 @@
         <div class="column is-full-width">
           <h2 class="title is-3" id="intro">I. Introduction</h2>
           <div class="content has-text-justified">
-            <p>
-              The introduction part of the report can be provided here
-            </p>
-          </div>
+            <p>Our project introduces a foveated transformer framework for 3D semantic occupancy prediction. In this task, a 3D scene is represented as a voxel grid, and the model predicts whether each voxel is occupied and which semantic class it belongs to. This representation is particularly important for autonomous driving, where accurate and efficient 3D scene understanding is required before downstream planning and decision-making.</p>
+            <div class="content has-text-centered">
+              <img src="./static/images/OccupancyPredictionWithVoxels.png"
+                  alt="3D occupancy prediction with voxels"
+                  style="max-width: 60%; height: auto;">
+              <p>
+                3D occupancy prediction with voxels.
+              </p>
+            </div>
+            
+            <p>A key limitation of standard voxel-based models is that they process the entire 3D volume at a uniform resolution, even though much of the space is empty or less relevant. Inspired by biological foveated vision, where the retina provides high acuity near the center of gaze and lower resolution in the periphery, we investigate whether a 3D occupancy model can allocate more computation to safety-critical regions while using coarser representations elsewhere.</p>
+            <div class="content has-text-centered">
+              <img src="./static/images/DistanceFromFovea.png"
+                  alt="Acuity vs. Distance from fovea"
+                  style="max-width: 50%; height: auto;">
+              <p>
+                Acuity vs. distance from fovea.
+              </p>
+            </div>
+            
+            <p>Building on VoxDet, our work explores foveated mechanisms for improving the efficiency of 3D occupancy prediction. Specifically, we study how distance-aware weighting and non-uniform token allocation can reduce unnecessary computation while preserving detail in regions that are most important for scene understanding.</p>
+        </div>
         </div>
       </div>
       <!--/ Introduction. -->
