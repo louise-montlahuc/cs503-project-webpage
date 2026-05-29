@@ -346,7 +346,7 @@
           <h3 class="title is-4">Adaptive loss</h3>
           <div class="content has-text-justified">
             <p>
-              Starting from this baseline, our first major modification was replacing the standard voxel-wise CE loss with an Adaptive Forward-Distance Weighted Loss. Because the loss function does not natively receive camera calibration matrices or depth maps, we use the voxel index along the x-axis (the forward direction of the ego-vehicle) as a proxy for distance. As voxel tokens pass through the image-view transformer and the occupancy encoder, the prediction head outputs per-voxel class logits. Before reducing the loss, we apply a dynamically computed multiplicative weight to each voxel's cross-entropy value. Closer voxels receive higher weights, effectively shifting the gradient magnitudes so the optimizer focuses more heavily on updating parameters for near-field, safety-critical regions. To maintain training stability, this weight is clamped to a range of [0.5,1.5]. While our framework supports exponential and inverse distance weighting (as well as up-weighting for dynamic classes, boundaries, and uncertainty), computational constraints on the cluster led us to focus our experiments on a linear forward-distance weighting scheme. Notably, we only apply this foveated weighting to the cross-entropy term; the global scaling losses remain unweighted to preserve overall scene consistency.
+              Starting from this baseline, our first major modification was replacing the standard voxel-wise CE loss with an Adaptive Forward-Distance Weighted Loss. Because the loss function does not natively receive camera calibration matrices or depth maps, we use the voxel index along the x-axis (the forward direction of the ego-vehicle) as a proxy for distance. As voxel tokens pass through the image-view transformer and the occupancy encoder, the prediction head outputs per-voxel class logits. Before reducing the loss, we apply a dynamically computed multiplicative weight to each voxel's cross-entropy value. Closer voxels receive higher weights, effectively shifting the gradient magnitudes so the optimizer focuses more heavily on updating parameters for near-field, safety-critical regions. To maintain training stability, this weight is clamped to a range of [0.5,1.5]. Our framework supports linear, exponential and inverse distance weighting. Notably, we only apply this foveated weighting to the cross-entropy term; the global scaling losses remain unweighted to preserve overall scene consistency.
             </p>
             <p>
               <span style="font-weight:bold">The Foveated Loss Function:</span>
@@ -661,11 +661,7 @@
       <div class="columns is-centered">
         <div class="column is-full-width">
           <h2 class="title is-3" id="sources">References</h2>
-          <div class="content has-text-justified">
-            <p>
-              References and citations cited in the Related Works section are listed below.
-            </p>
-            
+          <div class="content has-text-justified">            
             <p id="ref-Voxformer"> L. Yiming, Y. Zhiding, C. Christopher et al. (2023). Voxformer: Sparse voxel transformer for camera-based 3d semantic scene completion. <a href="https://arxiv.org/abs/2302.12251" target="_blank" rel="noopener">https://arxiv.org/abs/2302.12251</a></p>
             <p id="ref-biology"> A. Bucci, M. Büttner, N. Domdei et al. (2025). Synchronization of visual perception within the human fovea <a href="https://www.nature.com/articles/s41593-025-02011-3" target="_blank" rel="noopener">https://www.nature.com/articles/s41593-025-02011-3</a>.</p>
             <p id="ref-VoxDet"> W. Li, Z. Yu, and A. Alahi (2025). Voxdet: Rethinking 3d semantic occupancy prediction as dense object detection. <a href="https://arxiv.org/abs/2506.04623" target="_blank" rel="noopener">https://arxiv.org/abs/2506.04623</a></p>
@@ -688,9 +684,6 @@
         <div class="column is-full-width">
           <h2 class="title is-3" id="image-sources">Image Sources</h2>
           <div class="content has-text-justified">
-            <p>
-              The images from external sources are listed below.
-            </p>
             <ol>
               <li id="img-occupancy"><a href="https://www.semanticscholar.org/paper/Tri-Perspective-View-for-Vision-Based-3D-Semantic-Huang-Zheng/ea3cfdce04d7f6b2dc99a47ec9d33ba30dd5c39d" target="_blank" rel="noopener">Tri-perspective view for vision-based 3D semantic</a></li>
               <li id="img-fovea"><a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0174020" target="_blank" rel="noopener">Developing and validating a multimodal model of retinal degeneration in Stargardt disease</a></li>
