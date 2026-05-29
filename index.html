@@ -138,11 +138,12 @@
       <!-- TODO: Replace with your teaser image, gif or video file. Choose something that represents your project. -->
       <div style="display: flex; justify-content: center;">
         <img src="./static/gifs/voxdet_baseline.gif"
-             alt="VoxDet baseline"
-             style="width:30%; height:auto;"/>
+          alt="VoxDet baseline"
+          style="width:30%; height:auto;"/>
+        </video>
       </div>
       <h2 class="subtitle has-text-centered">
-        <span class="dnerf">Foveated Transformer</span>       
+        <span class="dnerf">Foveated Transformer</span> 
         <p>
           We propose a fovea-like, distance-aware voxelization within an existing framework, adapting spatial resolution to reduce computation while preserving detail in instance-critical regions.
         </p>
@@ -210,7 +211,7 @@
             <div class="tile is-parent">
               <a href="#results" class="tile is-child box" style="background-color: #e724dd; color: white; display: flex; align-items: center; justify-content: center;">
                 <p class="subtitle" style="color: white; font-weight: bold; text-align: center; margin: 0;">
-                  <font size="-0.5">Results</font>
+                  <font size="-0.5">Results and Discussion</font>
                 </p>
               </a>
             </div>
@@ -265,7 +266,7 @@
               </p>
             </div>
             
-            <p>A key limitation of standard voxel-based models is that they process the entire 3D volume at a uniform resolution, even though much of the space is empty or less relevant. Inspired by biological foveated vision, where the retina provides high acuity near the center of gaze and lower resolution in the periphery, we investigate whether a 3D occupancy model can allocate more computation to safety-critical regions while using coarser representations elsewhere.</p>
+            <p>A key limitation of standard voxel-based models is that they process the entire 3D volume at a uniform resolution, even though much of the space is empty or less relevant<a href="#ref-Voxformer">cite</a>. Inspired by biological foveated vision, where the retina provides high acuity near the center of gaze and lower resolution in the periphery<a href="#ref-biology">cite</a>, we investigate whether a 3D occupancy model can allocate more computation to safety-critical regions while using coarser representations elsewhere.</p>
             <div class="content has-text-centered">
               <img src="./static/images/DistanceFromFovea.png"
                   alt="Acuity vs. Distance from fovea"
@@ -323,7 +324,7 @@
           <h3 class="title is-4">Baseline Architecture</h3>
           <div class="content has-text-justified">
             <p>
-              To establish our baseline, we utilized the VoxDet<a href="#ref-VoxDet">cite</a> architecture. Originally, VoxDet frames occupancy prediction as an instance-centric problem featuring both a semantic branch and an instance-level regression branch (which predicts a 4D offset field). To obtain a clean baseline for our foveated modifications, we simplified the architecture by entirely removing the instance-level regression branch, allowing us to focus exclusively on semantic occupancy. Our experimental pipeline was built around the SemanticKITTI and KITTI Vision Benchmark datasets, processed and executed on the EPFL cluster. In this simplified baseline, the training objective consists of three terms: a geometric scaling loss and a semantic scaling loss (which act as global regularizers), and a standard voxel-wise cross-entropy (CE) loss that supervises each voxel independently.
+              To establish our baseline, we utilized the VoxDet<a href="#ref-VoxDet">cite</a> architecture. Originally, VoxDet frames occupancy prediction as an instance-centric problem featuring both a semantic branch and an instance-level regression branch (which predicts a 4D offset field). To obtain a clean baseline for our foveated modifications, we simplified the architecture by entirely removing the instance-level regression branch, allowing us to focus exclusively on semantic occupancy. Our experimental pipeline was built around the SemanticKITTI<a href="#ref-SemanticKITTI">cite</a> and KITTI Vision Benchmark<a href="#ref-KITTI">cite</a> datasets, processed and executed on the EPFL cluster. In this simplified baseline, the training objective consists of three terms: a geometric scaling loss and a semantic scaling loss (which act as global regularizers), and a standard voxel-wise cross-entropy (CE) loss that supervises each voxel independently.
             </p>
           </div>
           <div class="columns is-centered is-multiline">
@@ -392,9 +393,6 @@
             </p>
             <div class="content has-text-centered">
               <img src="./static/images/Foveation1.png" style="max-width: 80%;"/>
-              <p>
-                Voxel-only foveation <a href="#img-foveation1">[Img.5]</a>
-              </p>
             </div>
 
             <h4 class="title is-5">Part 2 — Foveation with query-reduction</h4>
@@ -408,13 +406,9 @@
             </ul>
             <p>
               After cross-attention, peripheral and mid-zone block features are scattered back to all member voxels within each block. This reduces the number of transformer queries proportionally to the pooling strides, lowering the attention cost significantly while concentrating computational budget on the foveal region where spatial precision matters most.
-              This part reduces backbone FLOPs from approximately 249 GFLOPs (dense) to approximately 34 GFLOPs, a 7.4&times; reduction.
             </p>
             <div class="content has-text-centered">
               <img src="./static/images/Foveation2.png" style="max-width: 80%;"/>
-              <p>
-                Query-only foveation <a href="#img-foveation2">[Img.6]</a>
-              </p>
             </div>
             <p>
               Together, the two parts form a coherent non-uniform representation: Part 1 ensures the backbone produces richer features in the foveal zone, and Part 2 ensures the cross-attention head devotes proportionally more query capacity to that same zone.
@@ -435,13 +429,13 @@
     <!-- Results. -->
     <div class="columns is-centered">
       <div class="column is-full-width">
-        <h2 class="title is-3" id="results">IV. Results</h2>
+        <h2 class="title is-3" id="results">IV. Results and Discussion</h2>
 
         <div class="content has-text-justified">
           <p>
             To characterise model performance, we report inference time as an efficiency metric and use Intersection over Union (IoU) and mean IoU (mIoU) to quantify predictive quality. For occupancy (occupied vs. empty), IoU measures the overlap between predicted and ground-truth voxels:
-          </p> 
-          <p class="has-text-centered">
+          </p>
+          <p>
             \[
             \mathrm{IoU}=\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FP}+\mathrm{FN}}
             \]
@@ -680,11 +674,14 @@
               References and citations cited in the Related Works section are listed below.
             </p>
             
+            <p id="ref-Voxformer"> L. Yiming, Y. Zhiding, C. Christopher et al. (2023). Voxformer: Sparse voxel transformer for camera-based 3d semantic scene completion. <a href="https://arxiv.org/abs/2302.12251" target="_blank" rel="noopener">https://arxiv.org/abs/2302.12251</a></p>
+            <p id="ref-biology"> A. Bucci, M. Büttner, N. Domdei et al. (2025). Synchronization of visual perception within the human fovea <a href="https://www.nature.com/articles/s41593-025-02011-3" target="_blank" rel="noopener">https://www.nature.com/articles/s41593-025-02011-3</a>.</p>
             <p id="ref-VoxDet"> W. Li, Z. Yu, and A. Alahi (2025). Voxdet: Rethinking 3d semantic occupancy prediction as dense object detection. <a href="https://arxiv.org/abs/2506.04623" target="_blank" rel="noopener">https://arxiv.org/abs/2506.04623</a></p>
             <p id="ref-Foveater"> A. Jonnalagadda, W. Yang Wang, B. S. Manjunath, and M. P. Eckstein (2022). Foveater: Foveated transformer for image classification. <a href="https://arxiv.org/abs/2105.14173" target="_blank" rel="noopener">https://arxiv.org/abs/2105.14173</a>.</p>
             <p id="ref-AdaptiveTokenSampling"> M. Fayyaz, S. A. Koohpayegani, F. R. Jafari et al. (2022). Adaptive token sampling for efficient vision transformers. <a href="https://arxiv.org/abs/2111.15667" target="_blank" rel="noopener">https://arxiv.org/abs/2111.15667</a></p>
-            <p id="ref-Voxformer"> L. Yiming, Y. Zhiding, C. Christopher et al. (2023). Voxformer: Sparse voxel transformer for camera-based 3d semantic scene completion. <a href="https://arxiv.org/abs/2302.12251" target="_blank" rel="noopener">https://arxiv.org/abs/2302.12251</a></p>
             <p id="ref-ContextGeometry"> Z. Yu, Z. Zhang, J. Ying et al. (2024). Context and geometry aware voxel transformer for semantic scene completion. <a href="https://arxiv.org/abs/2405.13675" target="_blank" rel="noopener">https://arxiv.org/abs/2405.13675</a></p>
+            <p id="ref-SemanticKITTI"> J. Behley, M. Garbade, A. Milioto, J. Quenzel, S. Behnke, C. Stachniss, and J. Gall (2019). SemanticKITTI: A Dataset for Semantic Scene Understanding of LiDAR Sequences. <a href="https://arxiv.org/abs/1904.01416" target="_blank" rel="noopener">https://arxiv.org/abs/1904.01416</a> 
+            <p id="ref-KITTI"> A. Geiger, P. Lenz, and R. Urtasun (2012). Are we ready for autonomous driving? The KITTI Vision Benchmark Suite. <a href="https://www.cvlibs.net/publications/Geiger2012CVPR.pdf" target="_blank" rel="noopener">https://www.cvlibs.net/publications/Geiger2012CVPR.pdf</a>
           </div>
         </div>
       </div>
@@ -718,34 +715,34 @@
 <!------------------------------------------------------------------------->
 
 <footer class="footer">
-  <div class="container">
-    <div class="content has-text-centered">
-      <!-- Optional icon link (e.g., to GitHub repo) -->
-    </div>
+            <div class="container">
+              <div class="content has-text-centered">
+                <!-- Optional icon link (e.g., to GitHub repo) -->
+              </div>
 
-    <div class="columns is-centered">
-      <div class="column is-8">
-        <div class="content">
-          <h6 class="title is-6">Individual Contributions</h6>
-          <p>
-            All authors contributed to the design and setup of the experimental pipeline. 
-            B.G. played a primary role in the environment configuration and results analysis. 
-            Loïc M. led the design and implementation of the adaptive (distance-weighted) loss.
-            A.L. initiated the development of the foveated tokenization pipeline. 
-            Louise M. extended this work by defining subsequent research directions and started website development. 
-            All authors wrote the manuscript, and overall contributed equally to the project.
-          </p>
-          <p><em>
-              This website is based on the <a href="https://github.com/nerfies/nerfies.github.io"
-                target="_blank">Nerfies website template</a>,
-              which is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"
-                target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
-            </em></p>
-        </div>
-      </div>
-    </div>
-  </div>
-</footer>
+              <div class="columns is-centered">
+                <div class="column is-8">
+                  <div class="content">
+                    <h6 class="title is-6">Individual Contributions</h6>
+                    <p>
+                      All authors contributed to the design and setup of the experimental pipeline. 
+                      B.G. played a primary role in the environment configuration and results analysis. 
+                      Loïc M. led the design and implementation of the adaptive (distance-weighted) loss.
+                      A.L. initiated the development of the foveated tokenization pipeline. 
+                      Louise M. extended this work by defining subsequent research directions and started website development. 
+                      All authors wrote the manuscript, and overall contributed equally to the project.
+                    </p>
+                    <p><em>
+                        This website is based on the <a href="https://github.com/nerfies/nerfies.github.io"
+                          target="_blank">Nerfies website template</a>,
+                        which is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"
+                          target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+                      </em></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </footer>
 
 </body>
 </html>
