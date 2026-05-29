@@ -137,13 +137,15 @@
     <div class="hero-body">
       <!-- TODO: Replace with your teaser image, gif or video file. Choose something that represents your project. -->
       <div style="display: flex; justify-content: center;">
-        <video id="teaser" autoplay muted loop playsinline width="30%" height="auto">
-          <source src="./static/videos/voxdet_baseline.mp4"
-                  type="video/mp4">
-        </video>
+        <img src="./static/gifs/voxdet_baseline.gif"
+             alt="VoxDet baseline"
+             style="width:30%; height:auto;"/>
       </div>
       <h2 class="subtitle has-text-centered">
-        <span class="dnerf">Foveated Transformer</span> We propose a fovea-like, distance-aware voxelization within an existing framework, adapting spatial resolution across encoder and decoder to reduce computation while preserving detail in instance-critical regions.
+        <span class="dnerf">Foveated Transformer</span>       
+        <p>
+          We propose a fovea-like, distance-aware voxelization within an existing framework, adapting spatial resolution to reduce computation while preserving detail in instance-critical regions.
+        </p>
       </h2>
     </div>
   </div>
@@ -165,11 +167,10 @@
             Current 3D perception models rely on uniform voxel grids that process all regions at the same resolution, leading to massive computational inefficiencies since much of 3D space is empty. Overcoming this bottleneck is critical for real-time applications like autonomous driving, where strict latency constraints demand faster inference without sacrificing vital spatial details.
           </p>
           <p>
-            Inspired by biological foveated vision, we propose a distance-aware, non-uniform tokenization method for 3D voxel transformers. This approach dynamically allocates high-resolution tokens to critical, nearby regions while using coarser representations for distant or empty space, successfully reducing the overall token count while preserving essential geometric detail.
+            Inspired by biological foveated vision, we propose a distance-aware, non-uniform tokenization method for 3D voxel transformers. This approach allocates high-resolution tokens to critical, central regions while using coarser representations for distant space, successfully reducing the overall token count while preserving essential geometric detail.
           </p>
           <p>
-            [Results] Summarize key outcomes, such as quantitative improvements, qualitative
-            observations, and main conclusions.
+            With our best model, we could reduce inference time by about 30% while keeping the decrease in IoU below 3%. This demonstrates that lowering voxel resolution in peripheral regions can cut computation with only a small impact on prediction quality.
           </p>
         </div>
       </div>
@@ -253,7 +254,7 @@
                   alt="3D occupancy prediction with voxels"
                   style="max-width: 60%; height: auto;">
               <p>
-                3D occupancy prediction with voxels.
+                3D occupancy prediction with voxels <a href="#img-occupancy">[Img.1]</a>
               </p>
             </div>
             
@@ -263,11 +264,11 @@
                   alt="Acuity vs. Distance from fovea"
                   style="max-width: 50%; height: auto;">
               <p>
-                Acuity vs. distance from fovea.
+                Acuity vs. distance from fovea <a href="#img-fovea">[Img.2]</a>
               </p>
             </div>
             
-            <p>Building on VoxDet, our work explores foveated mechanisms for improving the efficiency of 3D occupancy prediction. Specifically, we study how distance-aware weighting and non-uniform token allocation can reduce unnecessary computation while preserving detail in regions that are most important for scene understanding.</p>
+            <p>Building on VoxDet<a href="#ref-VoxDet">cite</a>, our work explores foveated mechanisms for improving the efficiency of 3D occupancy prediction. Specifically, we study how distance-aware weighting and non-uniform token allocation can reduce unnecessary computation while preserving detail in regions that are most important for scene understanding.</p>
         </div>
         </div>
       </div>
@@ -312,11 +313,8 @@
       <div class="columns is-centered">
         <div class="column is-full-width">
           <h2 class="title is-3" id="method">III. Methodology</h2>
-          <h3 class="title is-4">Motivation and Baseline Architecture</h3>
+          <h3 class="title is-4">Baseline Architecture</h3>
           <div class="content has-text-justified">
-            <p>
-              Current voxel-based perception models typically process 3D space with a uniform resolution, treating all regions with equal importance. Inspired by human foveated vision, where perception is highly detailed around a focus area, our project investigates whether a 3D occupancy model can dynamically allocate more capacity to safety-relevant or closer regions, while remaining compatible with standard uniform voxel grid evaluations.
-            </p>
             <p>
               To establish our baseline, we utilized the VoxDet<a href="#ref-VoxDet">cite</a> architecture. Originally, VoxDet frames occupancy prediction as an instance-centric problem featuring both a semantic branch and an instance-level regression branch (which predicts a 4D offset field). To obtain a clean baseline for our foveated modifications, we simplified the architecture by entirely removing the instance-level regression branch, allowing us to focus exclusively on semantic occupancy. Our experimental pipeline was built around the SemanticKITTI and KITTI Vision Benchmark datasets, processed and executed on the EPFL cluster. In this simplified baseline, the training objective consists of three terms: a geometric scaling loss and a semantic scaling loss (which act as global regularizers), and a standard voxel-wise cross-entropy (CE) loss that supervises each voxel independently.
             </p>
@@ -327,7 +325,7 @@
               <div class="content has-text-centered">
                 <img src="./static/images/VoxDet_architecture.png"/>
                 <p>
-                  VoxDet architecture
+                  VoxDet architecture <a href="#img-voxdet">[Img.3]</a>
                 </p>
               </div>
             </div>
@@ -347,7 +345,7 @@
           <h3 class="title is-4">Adaptive loss</h3>
           <div class="content has-text-justified">
             <p>
-              Starting from this baseline, our first major modification was replacing the standard voxel-wise CE loss with an Adaptive Forward-Distance Weighted Loss. Because the loss function does not natively receive camera calibration matrices or depth maps, we use the voxel index along the x-axis (the forward direction of the ego-vehicle) as a proxy for distance. As voxel tokens pass through the image-view transformer and the occupancy encoder, the prediction head (OccHead) outputs per-voxel class logits. Before reducing the loss, we apply a dynamically computed multiplicative weight to each voxel's cross-entropy value. Closer voxels receive higher weights, effectively shifting the gradient magnitudes so the optimizer focuses more heavily on updating parameters for near-field, safety-critical regions. To maintain training stability, this weight is clamped to a range of [0.5,1.5]. While our framework supports exponential and inverse distance weighting (as well as up-weighting for dynamic classes, boundaries, and uncertainty), computational constraints on the cluster led us to focus our experiments on a linear forward-distance weighting scheme. Notably, we only apply this foveated weighting to the cross-entropy term; the global scaling losses remain unweighted to preserve overall scene consistency.
+              Starting from this baseline, our first major modification was replacing the standard voxel-wise CE loss with an Adaptive Forward-Distance Weighted Loss. Because the loss function does not natively receive camera calibration matrices or depth maps, we use the voxel index along the x-axis (the forward direction of the ego-vehicle) as a proxy for distance. As voxel tokens pass through the image-view transformer and the occupancy encoder, the prediction head outputs per-voxel class logits. Before reducing the loss, we apply a dynamically computed multiplicative weight to each voxel's cross-entropy value. Closer voxels receive higher weights, effectively shifting the gradient magnitudes so the optimizer focuses more heavily on updating parameters for near-field, safety-critical regions. To maintain training stability, this weight is clamped to a range of [0.5,1.5]. While our framework supports exponential and inverse distance weighting (as well as up-weighting for dynamic classes, boundaries, and uncertainty), computational constraints on the cluster led us to focus our experiments on a linear forward-distance weighting scheme. Notably, we only apply this foveated weighting to the cross-entropy term; the global scaling losses remain unweighted to preserve overall scene consistency.
             </p>
             <p>
               <span style="font-weight:bold">The Foveated Loss Function:</span>
@@ -364,45 +362,52 @@
                   alt="Loss along x-axis"
                   style="max-width: 50%; height: auto; transform: translateX(-18%);"/>
               <p>
-                Loss along x-axis.
+                Loss along x-axis <a href="#img-loss">[Img.4]</a>
               </p>
             </div>
           </div>
           <h3 class="title is-4">Foveated tokenization</h3>
           <div class="content has-text-justified">
             <p>
-              Inspired by FoveaTer (ICLR 2023), foveated tokenization is applied at two distinct stages of the pipeline: first at the level of 3D feature extraction in the voxel backbone, and second at the level of cross-attention queries in the BEV lifting head.
+              Foveated tokenization is applied at two distinct stages of the pipeline: first at the level of 3D feature extraction in the voxel backbone, and second at the level of cross-attention with stereo image features.
             </p>
 
-            <h4 class="title is-5">Part 1 — Foveated Local Aggregator (backbone stage)</h4>
+            <h4 class="title is-5">Part 1 — Foveation with voxel-reduction</h4>
             <p>
-              The <em>FoveatedLocalAggregator</em> replaces the standard dense 3D backbone with a two-stream design that shares weights between both streams. Given the full voxel feature volume of shape $(B, C, V_H, V_W, V_Z)$, two parallel forward passes are computed:
+              We replace the standard dense 3D backbone with a two-stream design combining different resolutions. Given the full voxel feature volume of shape $(B, C, V_H, V_W, V_Z)$, two parallel forward passes are computed:
             </p>
             <ul>
               <li><strong>Foveal stream:</strong> A spatial crop centred at the fixation point is extracted at full resolution and passed through the shared backbone and FPN neck. This preserves fine-grained spatial detail in the region of interest.</li>
               <li><strong>Global stream:</strong> The entire volume is first average-pooled by a factor of 2 in every spatial dimension, halving the resolution, and then processed through the same backbone and FPN neck. This captures wide-field context at a fraction of the cost.</li>
             </ul>
             <p>
-              The outputs are merged by upsampling the global feature map back to full resolution via nearest-neighbour interpolation, then overwriting the foveal region with the high-resolution foveal features. The result is a complete $(B, C, V_H, V_W, V_Z)$ feature map in which the central foveal zone retains full-resolution features while the periphery carries coarser, pooled features. Because the backbone and neck weights are shared across both streams, no additional parameters are introduced. This design reduces backbone FLOPs from approximately 685 GFLOPs (dense) to approximately 151 GFLOPs, a 4.5&times; reduction.
+              The outputs are merged by upsampling the global feature map back to full resolution via nearest-neighbour interpolation, then overwriting the foveal region with the high-resolution foveal features. The result is a complete $(B, C, V_H, V_W, V_Z)$ feature map in which the central foveal zone retains full-resolution features while the periphery carries coarser, pooled features. Because the backbone and neck weights are shared across both streams, no additional parameters are introduced. This design reduces backbone FLOPs from approximately 687 GFLOPs (dense) to approximately 142 GFLOPs, a 4.8&times; reduction.
             </p>
             <div class="content has-text-centered">
               <img src="./static/images/Foveation1.png" style="max-width: 80%;"/>
+              <p>
+                Voxel-only foveation <a href="#img-foveation1">[Img.5]</a>
+              </p>
             </div>
 
-            <h4 class="title is-5">Part 2 — Foveated cross-attention tokenization (transformer stage)</h4>
+            <h4 class="title is-5">Part 2 — Foveation with query-reduction</h4>
             <p>
-              The second application occurs inside <em>VoxFormerHeadCrossAttention</em>, which lifts image features into the voxel grid via deformable cross-attention. Without foveation, every non-masked voxel in the grid is used as a separate query token, which is expensive for large volumes. With foveated tokenization, the set of active voxel queries is instead partitioned into three concentric zones defined by their $L_\infty$ (Chebyshev) distance from the same fixation point used in Part 1:
+              The second application occurs inside the cross-attention module, which lifts image features into the voxel grid. Without foveation, every non-masked voxel in the grid is used as a separate query token, which is expensive for large volumes. With foveated tokenization, the set of active voxel queries is instead partitioned into three concentric zones defined by their $L_\infty$ (Chebyshev) distance from the same fixation point used in Part 1:
             </p>
             <ul>
-              <li><strong>Foveal zone</strong> (distance &le; <em>foveal_radius</em>): every voxel is kept as an individual query token at full resolution.</li>
-              <li><strong>Mid zone</strong> (distance between <em>foveal_radius</em> and <em>mid_radius</em>): voxels are grouped into non-overlapping spatial blocks of size <em>mid_stride</em>&sup3;; each block is pooled into a single representative token.</li>
-              <li><strong>Peripheral zone</strong> (distance &gt; <em>mid_radius</em>): voxels are grouped into blocks of size <em>peripheral_stride</em>&sup3; and similarly reduced to one token per block.</li>
+              <li><strong>Foveal zone</strong> (distance &le; 20% of scene size): every voxel is kept as an individual query token at full resolution.</li>
+              <li><strong>Mid zone</strong> (distance between 20% and 40%): voxels are grouped into non-overlapping spatial blocks of size 3&times;3&times;3; each block is pooled into a single representative token.</li>
+              <li><strong>Peripheral zone</strong> (distance &gt; 40%): voxels are grouped into blocks of size 5&times;5&times;5 and similarly reduced to one token per block.</li>
             </ul>
             <p>
               After cross-attention, peripheral and mid-zone block features are scattered back to all member voxels within each block. This reduces the number of transformer queries proportionally to the pooling strides, lowering the attention cost significantly while concentrating computational budget on the foveal region where spatial precision matters most.
+              This part reduces backbone FLOPs from approximately 249 GFLOPs (dense) to approximately 34 GFLOPs, a 7.4&times; reduction.
             </p>
             <div class="content has-text-centered">
               <img src="./static/images/Foveation2.png" style="max-width: 80%;"/>
+              <p>
+                Query-only foveation <a href="#img-foveation2">[Img.6]</a>
+              </p>
             </div>
             <p>
               Together, the two parts form a coherent non-uniform representation: Part 1 ensures the backbone produces richer features in the foveal zone, and Part 2 ensures the cross-attention head devotes proportionally more query capacity to that same zone.
@@ -427,13 +432,24 @@
 
         <div class="content has-text-justified">
           <p>
+            To characterise model performance, we report inference time as an efficiency metric and use Intersection over Union (IoU) and mean IoU (mIoU) to quantify predictive quality. For occupancy (occupied vs. empty), IoU measures the overlap between predicted and ground-truth voxels:
+          </p> 
+          <p class="has-text-centered">
+            \[
+            \mathrm{IoU}=\frac{\mathrm{TP}}{\mathrm{TP}+\mathrm{FP}+\mathrm{FN}}
+            \]
+          </p>
+          <p>
+            mIoU is the arithmetic mean of the per-class IoUs and provides an overall semantic-performance score that prevents very frequent classes from dominating the result.
+          </p>
+          <p>
             We first evaluated the effect of the distance-based loss. Compared to the baseline loss, the distance-weighted variants slightly improve the validation IoU. The gains are modest, but they show that giving more importance to closer voxels can have a positive effect on occupancy prediction. Among the tested variants, the linear distance-based loss gives the best mIoU while remaining simple and stable, so we selected it for the rest of the experiments.
           </p>
 
           <div class="content has-text-centered">
             <img src="./static/images/distance_loss_results.png" style="max-width: 90%;"/>
             <p>
-              Comparison of the baseline loss with linear, exponential, and inverse distance-based losses.
+              Comparison of the baseline loss with linear, exponential, and inverse distance-based losses
             </p>
           </div>
 
@@ -448,7 +464,7 @@
           <div class="content has-text-centered">
             <img src="./static/images/foveation_results.png" style="max-width: 90%;"/>
             <p>
-              Ablation study comparing baseline, foveation, voxel-only foveation, query-only foveation, and variants with distance-based loss.
+              Ablation study comparing baseline, foveation, voxel-only foveation, query-only foveation, and variants with distance-based loss
             </p>
           </div>
         </div>
@@ -600,17 +616,42 @@
     <div class="container is-max-desktop">
       <div class="columns is-centered">
         <div class="column is-full-width">
-          <h2 class="title is-3" id="sources">Sources</h2>
+          <h2 class="title is-3" id="sources">References</h2>
           <div class="content has-text-justified">
             <p>
               References and citations cited in the Related Works section are listed below.
             </p>
-
+            
+            <p id="ref-VoxDet"> W. Li, Z. Yu, and A. Alahi (2025). Voxdet: Rethinking 3d semantic occupancy prediction as dense object detection. <a href="https://arxiv.org/abs/2506.04623" target="_blank" rel="noopener">https://arxiv.org/abs/2506.04623</a></p>
             <p id="ref-Foveater"> A. Jonnalagadda, W. Yang Wang, B. S. Manjunath, and M. P. Eckstein (2022). Foveater: Foveated transformer for image classification. <a href="https://arxiv.org/abs/2105.14173" target="_blank" rel="noopener">https://arxiv.org/abs/2105.14173</a>.</p>
             <p id="ref-AdaptiveTokenSampling"> M. Fayyaz, S. A. Koohpayegani, F. R. Jafari et al. (2022). Adaptive token sampling for efficient vision transformers. <a href="https://arxiv.org/abs/2111.15667" target="_blank" rel="noopener">https://arxiv.org/abs/2111.15667</a></p>
             <p id="ref-Voxformer"> L. Yiming, Y. Zhiding, C. Christopher et al. (2023). Voxformer: Sparse voxel transformer for camera-based 3d semantic scene completion. <a href="https://arxiv.org/abs/2302.12251" target="_blank" rel="noopener">https://arxiv.org/abs/2302.12251</a></p>
             <p id="ref-ContextGeometry"> Z. Yu, Z. Zhang, J. Ying et al. (2024). Context and geometry aware voxel transformer for semantic scene completion. <a href="https://arxiv.org/abs/2405.13675" target="_blank" rel="noopener">https://arxiv.org/abs/2405.13675</a></p>
-            <p id="ref-VoxDet"> W. Li, Z. Yu, and A. Alahi (2025). Voxdet: Rethinking 3d semantic occupancy prediction as dense object detection. <a href="https://arxiv.org/abs/2506.04623" target="_blank" rel="noopener">https://arxiv.org/abs/2506.04623</a></p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+<!------------------------------------------------------------------------->
+
+<!------------------------------- IMAGES SOURCES -------------------------------->
+  <section class="section">
+    <div class="container is-max-desktop">
+      <div class="columns is-centered">
+        <div class="column is-full-width">
+          <h2 class="title is-3" id="image-sources">Image Sources</h2>
+          <div class="content has-text-justified">
+            <p>
+              The images from external sources are listed below.
+            </p>
+            <ol>
+              <li id="img-occupancy"><a href="https://www.semanticscholar.org/paper/Tri-Perspective-View-for-Vision-Based-3D-Semantic-Huang-Zheng/ea3cfdce04d7f6b2dc99a47ec9d33ba30dd5c39d" target="_blank" rel="noopener">Tri-perspective view for vision-based 3D semantic</a></li>
+              <li id="img-fovea"><a href="https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0174020" target="_blank" rel="noopener">Developing and validating a multimodal model of retinal degeneration in Stargardt disease</a></li>
+              <li id="img-voxdet"><a href="https://arxiv.org/abs/2506.04623" target="_blank" rel="noopener">VoxDet: rethinking 3D semantic occupancy prediction as dense object detection</a></li>
+              <li id="img-loss"><a href="https://github.com/prismformore/Multi-Task-Transformer/blob/main/TaskPrompter/README.md" target="_blank" rel="noopener">TaskPrompter: spatial-channel multi-task prompting for dense scene understanding</a></li>
+              <li id="img-foveation1"><a href="https://gemini.google/ch/overview/image-generation/?hl=fr-CH" target="_blank" rel="noopener">AI-generated image using Gemini Nano Banana 2</a></li>
+              <li id="img-foveation2"><a href="https://gemini.google/ch/overview/image-generation/?hl=fr-CH" target="_blank" rel="noopener">AI-generated image using Gemini Nano Banana 2</a></li>
+            </ol>
           </div>
         </div>
       </div>
@@ -619,32 +660,34 @@
 <!------------------------------------------------------------------------->
 
 <footer class="footer">
-            <div class="container">
-              <div class="content has-text-centered">
-                <!-- Optional icon link (e.g., to GitHub repo) -->
-              </div>
+  <div class="container">
+    <div class="content has-text-centered">
+      <!-- Optional icon link (e.g., to GitHub repo) -->
+    </div>
 
-              <div class="columns is-centered">
-                <div class="column is-8">
-                  <div class="content">
-                    <h6 class="title is-6">Individual Contributions TODOOOOOOOOOOOOO !!!!!!!</h6>
-                    <p>
-                      <strong>Loïc Misenta</strong> : Methodology, experiments, results analysis, and website development. <br>
-                      <strong>Alexandra Lagutova</strong> : Methodology, experiments, results analysis, and website development. <br>
-                      <strong>Bryan Gotti</strong> : Methodology, experiments, results analysis, and website development. <br>
-                      <strong>Louise Montlahuc</strong> : Methodology, experiments, results analysis, and website development. <br>
-                    </p>
-                    <p><em>
-                        This website is based on the <a href="https://github.com/nerfies/nerfies.github.io"
-                          target="_blank">Nerfies website template</a>,
-                        which is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"
-                          target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
-                      </em></p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </footer>
+    <div class="columns is-centered">
+      <div class="column is-8">
+        <div class="content">
+          <h6 class="title is-6">Individual Contributions</h6>
+          <p>
+            All authors contributed to the design and setup of the experimental pipeline. 
+            B.G. played a primary role in the environment configuration and results analysis. 
+            Loïc M. led the design and implementation of the adaptive (distance-weighted) loss.
+            A.L. initiated the development of the foveated tokenization pipeline. 
+            Louise M. extended this work by defining subsequent research directions and started website development. 
+            All authors wrote the manuscript, and overall contributed equally to the project.
+          </p>
+          <p><em>
+              This website is based on the <a href="https://github.com/nerfies/nerfies.github.io"
+                target="_blank">Nerfies website template</a>,
+              which is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"
+                target="_blank">Creative Commons Attribution-ShareAlike 4.0 International License</a>.
+            </em></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</footer>
 
 </body>
 </html>
