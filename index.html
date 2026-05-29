@@ -5,10 +5,10 @@
 <!--TODO: THE METADATA OF THE WEBSITE CAN BE EDITED USING THE META TAGS BELOW -->
   <meta charset="utf-8">
   <meta name="description"
-        content="Template project website. Replace this line with a one-sentence summary of your project.">
-  <meta name="keywords" content="project website, template, research">
+        content="Foveated Transformer for 3D Occupancy Prediction: Adapting spatial resolution to reduce computation while preserving detail.">
+  <meta name="keywords" content="3D occupancy prediction, foveated transformer, autonomous driving, voxel resolution">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Foveated transformer</title>
+  <title>Foveated Transformer for 3D Occupancy</title>
 <!------------------------------------------------------------------------->
 
 
@@ -163,7 +163,6 @@
         <h2 class="title is-3">Abstract</h2>
         <div class="content has-text-justified">
           <p>
-            <!-- TODO: Replace this abstract with your own project summary (3-5 sentences). -->
             Current 3D perception models rely on uniform voxel grids that process all regions at the same resolution, leading to massive computational inefficiencies since much of 3D space is empty. Overcoming this bottleneck is critical for real-time applications like autonomous driving, where strict latency constraints demand faster inference without sacrificing vital spatial details.
           </p>
           <p>
@@ -217,9 +216,17 @@
             </div>
 
             <div class="tile is-parent">
+              <a href="#discussion" class="tile is-child box" style="background-color: #901a8e; color: white; display: flex; align-items: center; justify-content: center;">
+                <p class="subtitle" style="color: white; font-weight: bold; text-align: center; margin: 0;">
+                  <font size="-0.5">Discussion</font>
+                </p>
+              </a>
+            </div>
+
+            <div class="tile is-parent">
               <a href="#conclusion" class="tile is-child box" style="background-color: #4c0948; color: white; display: flex; align-items: center; justify-content: center;">
                 <p class="subtitle" style="color: white; font-weight: bold; text-align: center; margin: 0;">
-                  <font size="-0.5">Conclusion and Limitations</font>
+                  <font size="-0.5">Conclusion</font>
                 </p>
               </a>
             </div>
@@ -471,6 +478,7 @@
       </div>
     </div>
     <!--/ Results. -->
+    
     <h3 class="title is-4">IoU, mean IoU and inference time metrics</h3>
 
       <div class="content has-text-justified">
@@ -512,6 +520,7 @@
           \]
         </p>
       </div>
+
       <h3 class="title is-4">Efficiency comparison</h3>
 
         <div class="content has-text-justified">
@@ -523,6 +532,7 @@
             <img src="./static/images/efficiency_plot.png" style="max-width: 65%;"/>
           </div>
         </div>
+
   </div>
 </section>
 <!------------------------------------------------------------------------->
@@ -530,26 +540,74 @@
 <!-----------------------------TODO: DISCUSSION-------------------------------->
 <section class="section">
   <div class="container is-max-desktop">
-    <!-- Conclusion and Limitations. -->
     <div class="columns is-centered">
       <div class="column is-full-width">
-        <h2 class="title is-3" id="conclusion">V. Conclusion and Limitations</h2>
+        <h2 class="title is-3" id="discussion">V. Discussion</h2>
+        
+        <h3 class="title is-4">FLOPs and Inference Time Bottlenecks</h3>
         <div class="content has-text-justified">
           <p>
-            Our experiments show that foveated processing can improve the efficiency of 3D occupancy prediction. The best result is obtained with voxel-only foveation, which reduces inference time by about 30% while keeping the decrease in IoU below 3%. This confirms that reducing voxel resolution in less critical regions can save computation while preserving most of the prediction quality.
+            The ablation study revealed an interesting behavior: query-only foveation did not significantly decrease overall inference time. We can explain this discrepancy by analyzing the theoretical floating-point operations (FLOPs) of the respective network components.
           </p>
-
           <p>
-            However, the results also show some limitations. Query-only foveation does not significantly reduce inference time, and combining query reduction with voxel reduction leads to worse performance than voxel-only foveation. In addition, adding the distance-based loss to foveation does not improve the final results in our current experiments.
+            In the dense baseline, the entire network pipeline requires approximately 1132 GFLOPs. The cross-attention module (stage where query reduction is applied) accounts for roughly 249 GFLOPs. Meanwhile, the 3D voxel feature extractor (stage where voxel reduction is applied) consumes about 687 GFLOPs.
           </p>
-
           <p>
-            Future work should explore better hyperparameter tuning, including max pooling versus average pooling, different pooling sizes, and different foveal or peripheral region shapes. Another important direction would be to reduce the keys and values in the attention mechanism, not only the queries. Finally, the focus point is currently fixed, but making it dynamic could allow the model to adapt its high-resolution region to the actual content of the scene.
+            Applying query reduction alone cuts the cross-attention operations by ~11.3&times;, saving around 215 GFLOPs (which is only a ~19% reduction of the total 1132 GFLOP pipeline). On the other hand, voxel reduction cuts the 3D backbone operations by ~4.8&times;, saving roughly 545 GFLOPs (a ~48% reduction of the total pipeline). This fundamental disparity in computational bottlenecks confirms why voxel-only foveation yields a much more noticeable 30% empirical impact on the measured inference time.
           </p>
+          <p>
+            Furthermore, while the theoretical FLOPs for the total pipeline decreased by a factor of 3.0&times; (from 1131.6 GFLOPs to 371.8 GFLOPs) in the combined setting, our measured wall-clock inference time only decreased by roughly 30%. This gap between theoretical and empirical efficiency is common in PyTorch due to memory bandwidth constraints and CUDA kernel overheads.
+          </p>
+        </div>
+
+        <h3 class="title is-4">Effect of Distance-Based Loss on Foveation</h3>
+        <div class="content has-text-justified">
+          <p>
+            Combining our distance-based loss with the foveation mechanisms resulted in degraded performance. This is highly likely because the model already struggles to accurately predict distant regions due to the reduced spatial resolution enforced by foveation. Applying a linear distance-based loss that down-weights these exact same distant voxels compounds the difficulty, effectively removing the gradient incentive for the optimizer to learn robust representations for them.
+          </p>
+        </div>
+
+        <h3 class="title is-4">Compound Degradation in the Combined Approach</h3>
+        <div class="content has-text-justified">
+          <p>
+            Additionally, combining voxel and query foveation performed worse than voxel-only foveation. This compound degradation likely occurs because foveating the backbone already compresses the spatial representation into a coarser latent state in the periphery. Passing this already-fragile peripheral representation through a second heavy compression bottleneck (query pooling) destroys too much critical geometric information, leading to a measurable drop in accuracy.
+          </p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+<!------------------------------------------------------------------------->
+
+<!-----------------------------TODO: CONCLUSION-------------------------------->
+<section class="section">
+  <div class="container is-max-desktop">
+    <div class="columns is-centered">
+      <div class="column is-full-width">
+        <h2 class="title is-3" id="conclusion">VI. Conclusion and Future Work</h2>
+        
+        <h3 class="title is-4">Summary of Achievements</h3>
+        <div class="content has-text-justified">
+          <p>
+            Our experiments demonstrate that foveated processing can successfully optimize the efficiency of 3D occupancy prediction models. By implementing a voxel-only foveation strategy, we achieved a ~30% reduction in inference time while maintaining the intersection-over-union (IoU) drop strictly below 3%. This validates our core hypothesis: allocating high-resolution processing to safety-critical, central regions while utilizing coarser representations for the periphery significantly cuts unnecessary computation without severely sacrificing vital spatial awareness.
+          </p>
+        </div>
+
+        <h3 class="title is-4">Next Steps</h3>
+        <div class="content has-text-justified">
+          <p>
+            Moving forward, we identify several key directions to expand upon this framework:
+          </p>
+          <ul>
+            <li><strong>Inverse Distance Weighting:</strong> To counteract the difficulty of predicting lower-resolution distant voxels, a promising next step is to test an <em>inverse</em> distance-based loss. By up-weighting distant regions during training, we force the model to better utilize its compressed peripheral features, theoretically counterbalancing the resolution deficit.</li>
+            <li><strong>Attention Optimization:</strong> Currently, query reduction only targets the queries (Q) in the transformer. Exploring methods to spatially reduce the keys (K) and values (V) from the image features could further maximize the efficiency gains inside the cross-attention module.</li>
+            <li><strong>Hyperparameter Tuning:</strong> A deeper grid search into the foveation architecture—such as comparing max pooling versus average pooling, altering pooling block sizes (e.g., 2&times;2&times;2 vs 3&times;3&times;3), and trying different geometric shapes for the spatial zones (e.g., spherical vs. cuboid)—could yield an even better Pareto-optimal front.</li>
+            <li><strong>Dynamic Focal Point:</strong> Our current implementation relies on a static, pre-defined fixation point in the voxel grid. Using a dynamic focal point—perhaps guided by an attention heuristic or gaze-tracking for autonomous vehicles—could allow the model to dynamically adapt its high-resolution processing to the most critical objects in the current scene (e.g., a crossing pedestrian). However, computing this dynamic fixation point requires an auxiliary mechanism running <em>before</em> the main prediction pipeline. This added computational overhead must be meticulously managed so that it does not negate the latency benefits we achieved through foveation.</li>
+          </ul>
         </div>
       </div>
     </div>
-    <!--/ Conclusion and Limitations. -->
   </div>
 </section>
 <!------------------------------------------------------------------------->
@@ -560,7 +618,7 @@
       <!-- Visual Items. -->
       <div class="columns is-centered">
         <div class="column is-full-width">
-          <h2 class="title is-3" id="visual_items">V. Visual Items TODO METTRE LES VIDEO STYLE DES VOXEL !!!!!!</h2>
+          <h2 class="title is-3" id="visual_items">VII. Visual Items TODO METTRE LES VIDEO STYLE DES VOXEL !!!!!!</h2>
           <div class="content has-text-justified">
             <p>
               Here you can see possible visualizations that can be used in this website 
